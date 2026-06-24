@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+
+  # ── FastAPI Application ──────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: interview-bot-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - audio_data:/app/static/audio
+    networks:
+      - bot-network
+
+volumes:
+  audio_data:
+
+networks:
+  bot-network:
+    driver: bridge

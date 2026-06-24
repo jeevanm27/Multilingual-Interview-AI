@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multilingual Interview AI Bot</title>
+  <meta name="description" content="AI-powered multilingual technical interview simulator. Practice in English, Spanish, French, German, Tamil, and Telugu." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' },
+            surface: { 800: '#1e1b2e', 900: '#13111e', card: '#252338' }
+          },
+          animation: { 'fade-in': 'fadeIn .35s ease', 'pulse-slow': 'pulse 2s infinite' },
+          keyframes: { fadeIn: { from: { opacity: 0, transform: 'translateY(10px)' }, to: { opacity: 1, transform: 'translateY(0)' } } }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #chat-box { scrollbar-width: thin; scrollbar-color: #8b5cf6 #1e1b2e; }
+    #chat-box::-webkit-scrollbar { width: 6px; }
+    #chat-box::-webkit-scrollbar-track { background: #1e1b2e; }
+    #chat-box::-webkit-scrollbar-thumb { background: #8b5cf6; border-radius: 3px; }
+    .glass { background: rgba(37,35,56,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(139,92,246,0.2); }
+    .glow { box-shadow: 0 0 30px rgba(139,92,246,0.15); }
+    .btn-primary { transition: all .2s; }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 0 20px rgba(139,92,246,0.5); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 50%; cursor: not-allowed; }
+    .chat-bubble { animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform:translateY(0);} }
+    .typing-dot { animation: typing 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: .2s; }
+    .typing-dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes typing { 0%,80%,100% { transform:scale(0.6); opacity:.4; } 40% { transform:scale(1); opacity:1; } }
+  </style>
+</head>
+<body class="bg-surface-900 text-gray-100 min-h-screen">
+
+  <!-- Background gradient blobs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-700 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    <div class="absolute top-1/2 -right-40 w-96 h-96 bg-purple-900 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    <div class="absolute -bottom-20 left-1/3 w-96 h-96 bg-indigo-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+  </div>
+
+  <div class="relative z-10 max-w-3xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center gap-2 bg-brand-700/20 border border-brand-500/30 rounded-full px-4 py-1.5 text-brand-400 text-sm font-medium mb-4">
+        <span class="w-2 h-2 bg-brand-400 rounded-full animate-pulse-slow"></span>
+        AI-Powered Interview Simulator
+      </div>
+      <h1 class="text-4xl font-bold bg-gradient-to-r from-brand-400 via-purple-300 to-indigo-300 bg-clip-text text-transparent">
+        Interview AI Bot
+      </h1>
+      <p class="text-gray-400 mt-2 text-sm">Practice technical interviews in your preferred language</p>
+    </div>
+
+    <!-- Setup Card -->
+    <div id="setup-card" class="glass rounded-2xl p-6 glow mb-6">
+      <h2 class="text-lg font-semibold text-gray-100 mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Interview Setup
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        <div>
+          <label for="job-role-input" class="block text-xs font-medium text-gray-400 mb-1.5">Job Role</label>
+          <input
+            id="job-role-input"
+            type="text"
+            placeholder="e.g. Backend Engineer, Data Scientist"
+            value="Backend Engineer"
+            class="w-full bg-surface-900 border border-gray-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-lg px-4 py-2.5 text-sm text-gray-100 placeholder-gray-600 outline-none transition"
+          />
+        </div>
+        <div>
+          <label for="language-select" class="block text-xs font-medium text-gray-400 mb-1.5">Interview Language</label>
+          <select
+            id="language-select"
+            class="w-full bg-surface-900 border border-gray-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-lg px-4 py-2.5 text-sm text-gray-100 outline-none transition cursor-pointer"
+          >
+            <option value="English">🇬🇧 English</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Spanish" selected>🇪🇸 Spanish</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="Tamil">🇮🇳 Tamil</option>
+            <option value="Telugu">🇮🇳 Telugu</option>
+          </select>
+        </div>
+      </div>
+      <button
+        id="start-btn"
+        onclick="startInterview()"
+        class="btn-primary w-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold rounded-xl py-3 flex items-center justify-center gap-2"
+      >
+        <svg id="start-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span id="start-btn-text">Start Interview</span>
+      </button>
+    </div>
+
+    <!-- Interview Panel (hidden until started) -->
+    <div id="interview-panel" class="hidden">
+
+      <!-- Progress Bar -->
+      <div class="glass rounded-xl px-5 py-3 mb-4 flex items-center gap-3">
+        <span class="text-xs text-gray-400 whitespace-nowrap">Progress</span>
+        <div class="flex-1 bg-surface-900 rounded-full h-2 overflow-hidden">
+          <div id="progress-bar" class="h-2 bg-gradient-to-r from-brand-500 to-indigo-500 rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+        <span id="progress-label" class="text-xs text-brand-400 font-medium whitespace-nowrap">0 / 6</span>
+      </div>
+
+      <!-- Chat Box -->
+      <div id="chat-box" class="glass rounded-2xl p-5 glow mb-4 h-80 overflow-y-auto flex flex-col gap-4">
+        <!-- Messages injected here -->
+      </div>
+
+      <!-- Typing Indicator -->
+      <div id="typing-indicator" class="hidden flex items-center gap-2 px-2 mb-3">
+        <div class="w-8 h-8 rounded-full bg-brand-600/30 flex items-center justify-center">
+          <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+        </div>
+        <div class="glass rounded-xl px-4 py-2.5 flex gap-1.5 items-center">
+          <div class="typing-dot w-2 h-2 bg-brand-400 rounded-full"></div>
+          <div class="typing-dot w-2 h-2 bg-brand-400 rounded-full"></div>
+          <div class="typing-dot w-2 h-2 bg-brand-400 rounded-full"></div>
+        </div>
+      </div>
+
+      <!-- Audio Player -->
+      <div id="audio-container" class="hidden glass rounded-xl px-5 py-3 mb-4 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-brand-600/30 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+          </svg>
+        </div>
+        <audio id="ai-audio" controls class="flex-1 h-9 accent-purple-500" style="min-width:0"></audio>
+        <span class="text-xs text-brand-400 font-medium">AI Voice</span>
+      </div>
+
+      <!-- Answer Input -->
+      <div id="answer-area" class="glass rounded-2xl p-5 glow">
+        <label for="answer-textarea" class="block text-xs font-medium text-gray-400 mb-2">Your Answer</label>
+        <textarea
+          id="answer-textarea"
+          rows="4"
+          placeholder="Type your answer here..."
+          class="w-full bg-surface-900 border border-gray-700 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 rounded-xl px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none resize-none transition"
+        ></textarea>
+        <div class="flex items-center justify-between mt-3 gap-3">
+          <p class="text-xs text-gray-500">Be concise and technical. The AI will acknowledge and ask the next question.</p>
+          <button
+            id="submit-btn"
+            onclick="submitAnswer()"
+            class="btn-primary shrink-0 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold rounded-xl px-6 py-2.5 flex items-center gap-2 text-sm"
+          >
+            <svg id="submit-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+            <span id="submit-btn-text">Submit Answer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Restart -->
+      <div class="text-center mt-4">
+        <button onclick="resetInterview()" class="text-xs text-gray-500 hover:text-brand-400 transition underline">
+          Start a new interview
+        </button>
+      </div>
+
+    </div><!-- /interview-panel -->
+
+    <!-- Footer -->
+    <p class="text-center text-xs text-gray-700 mt-10">
+      Built with FastAPI · OpenAI · Redis · gTTS &nbsp;|&nbsp; Portfolio Project
+    </p>
+  </div><!-- /container -->
+
+  <script>
+    // ── State ─────────────────────────────────────────────────────────────
+    let sessionId = null;
+    let questionNumber = 0;
+    const MAX_QUESTIONS = 6;
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    function setLoading(isLoading) {
+      const startBtn  = document.getElementById('start-btn');
+      const submitBtn = document.getElementById('submit-btn');
+      const spinner   = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>`;
+
+      if (isLoading) {
+        if (startBtn)  { startBtn.disabled = true;  document.getElementById('start-btn-text').textContent  = 'Starting…'; document.getElementById('start-icon').outerHTML  = spinner; }
+        if (submitBtn) { submitBtn.disabled = true; document.getElementById('submit-btn-text').textContent = 'Processing…'; document.getElementById('submit-icon').outerHTML = spinner; }
+        document.getElementById('typing-indicator').classList.remove('hidden');
+      } else {
+        if (submitBtn) { submitBtn.disabled = false; document.getElementById('submit-btn-text').textContent = 'Submit Answer'; }
+        document.getElementById('typing-indicator').classList.add('hidden');
+      }
+    }
+
+    function updateProgress(current) {
+      const pct = Math.min((current / MAX_QUESTIONS) * 100, 100);
+      document.getElementById('progress-bar').style.width = pct + '%';
+      document.getElementById('progress-label').textContent = `${current} / ${MAX_QUESTIONS}`;
+    }
+
+    function appendMessage(role, text) {
+      const box = document.getElementById('chat-box');
+      const isAI = role === 'ai';
+      const bubble = document.createElement('div');
+      bubble.className = `chat-bubble flex items-start gap-3 ${isAI ? '' : 'flex-row-reverse'}`;
+      bubble.innerHTML = `
+        <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center ${isAI ? 'bg-brand-600/30' : 'bg-gray-700/60'}">
+          ${isAI
+            ? `<svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>`
+            : `<svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>`
+          }
+        </div>
+        <div class="max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${isAI ? 'bg-brand-600/10 border border-brand-500/20 text-gray-100' : 'bg-surface-card border border-gray-700/60 text-gray-200'}">
+          ${text.replace(/\n/g, '<br>')}
+        </div>`;
+      box.appendChild(bubble);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function playAudio(url) {
+      const container = document.getElementById('audio-container');
+      const player    = document.getElementById('ai-audio');
+      container.classList.remove('hidden');
+      player.src = url;
+      player.load();
+      player.play().catch(() => {});
+    }
+
+    function showInterviewPanel() {
+      document.getElementById('setup-card').classList.add('hidden');
+      document.getElementById('interview-panel').classList.remove('hidden');
+    }
+
+    function resetInterview() {
+      sessionId = null;
+      questionNumber = 0;
+      document.getElementById('chat-box').innerHTML = '';
+      document.getElementById('answer-textarea').value = '';
+      document.getElementById('audio-container').classList.add('hidden');
+      document.getElementById('answer-area').classList.remove('hidden');
+      document.getElementById('interview-panel').classList.add('hidden');
+      document.getElementById('setup-card').classList.remove('hidden');
+
+      // Restore start button
+      const startBtn = document.getElementById('start-btn');
+      startBtn.disabled = false;
+      document.getElementById('start-btn-text').textContent = 'Start Interview';
+      startBtn.querySelector('svg')?.remove();
+    }
+
+    // ── API Calls ─────────────────────────────────────────────────────────
+    async function startInterview() {
+      const jobRole  = document.getElementById('job-role-input').value.trim();
+      const language = document.getElementById('language-select').value;
+      if (!jobRole) { alert('Please enter a job role.'); return; }
+
+      setLoading(true);
+      try {
+        const res  = await fetch('/start-interview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ job_role: jobRole, target_language: language }),
+        });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Server error');
+        const data = await res.json();
+
+        sessionId      = data.session_id;
+        questionNumber = data.question_number;
+
+        showInterviewPanel();
+        updateProgress(questionNumber);
+        appendMessage('ai', data.question_text);
+        playAudio(data.audio_url);
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function submitAnswer() {
+      const answer   = document.getElementById('answer-textarea').value.trim();
+      const language = document.getElementById('language-select').value;
+      if (!answer)    { alert('Please type your answer first.'); return; }
+      if (!sessionId) { alert('No active session. Please start a new interview.'); return; }
+
+      appendMessage('user', answer);
+      document.getElementById('answer-textarea').value = '';
+      setLoading(true);
+
+      try {
+        const res  = await fetch('/submit-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, answer, target_language: language }),
+        });
+        if (!res.ok) throw new Error((await res.json()).detail || 'Server error');
+        const data = await res.json();
+
+        questionNumber = data.question_number;
+        updateProgress(questionNumber);
+        appendMessage('ai', data.question_text);
+        playAudio(data.audio_url);
+
+        if (data.is_complete) {
+          document.getElementById('answer-area').classList.add('hidden');
+          const box = document.getElementById('chat-box');
+          const endBanner = document.createElement('div');
+          endBanner.className = 'chat-bubble text-center py-3 px-4 rounded-xl bg-brand-700/20 border border-brand-500/30 text-brand-300 text-sm font-medium mt-2';
+          endBanner.textContent = '🎉 Interview Complete! See your feedback above.';
+          box.appendChild(endBanner);
+          box.scrollTop = box.scrollHeight;
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Allow Shift+Enter for newline, Enter alone to submit
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('answer-textarea').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitAnswer(); }
+      });
+    });
+  </script>
+</body>
+</html>
