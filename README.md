@@ -16,14 +16,7 @@ An AI-powered technical interview simulator that conducts full mock interviews i
 
 Most interview-prep tools are English-only and text-based. This bot generates **contextual, role-specific interview questions on the fly** using GPT-4o-mini, speaks them aloud in the candidate's chosen language via gTTS, evaluates spoken/typed answers, and closes with a short strengths/improvement summary — all through a lightweight FastAPI backend with zero external database dependency.
 
----
 
-## 📸 Demo
-
-> Add a screenshot or GIF of the app here, e.g.
-> `![Demo](docs/demo.gif)`
-
----
 
 ## 🧰 Tech Stack
 
