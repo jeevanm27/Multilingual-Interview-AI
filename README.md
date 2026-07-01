@@ -1,50 +1,94 @@
 # 🤖 Multilingual Interview AI Bot
 
-An AI-powered technical interview simulator that conducts interviews in **6 languages** — English, German, Spanish, French, Tamil, and Telugu — with real-time voice playback.
+An AI-powered technical interview simulator that conducts full mock interviews in **6 languages** — English, German, Spanish, French, Tamil, and Telugu — complete with real-time voice playback of every question.
 
-**Stack:** Python · FastAPI · OpenAI GPT-4o-mini · gTTS · Docker
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white">
+  <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
+---
+
+## ✨ Why this project?
+
+Most interview-prep tools are English-only and text-based. This bot generates **contextual, role-specific interview questions on the fly** using GPT-4o-mini, speaks them aloud in the candidate's chosen language via gTTS, evaluates spoken/typed answers, and closes with a short strengths/improvement summary — all through a lightweight FastAPI backend with zero external database dependency.
+
+---
+
+## 📸 Demo
+
+> Add a screenshot or GIF of the app here, e.g.
+> `![Demo](docs/demo.gif)`
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python, FastAPI |
+| LLM | OpenAI GPT-4o-mini |
+| Text-to-Speech | gTTS (Google Text-to-Speech) |
+| Frontend | Vanilla JS, HTML, CSS |
+| Deployment | Docker, Docker Compose |
+| Session storage | In-memory (no DB required) |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-pfm 2/
-├── main.py                  # FastAPI backend — all routes, session logic, LLM calls
+Multilingual-Interview-AI/
+├── main.py                  # FastAPI backend — routes, session logic, LLM calls
 ├── requirements.txt         # Python dependencies
-├── Dockerfile               # Multi-stage Docker image (slim runtime)
-├── docker-compose.yml       # Single-service Docker setup
-├── .env.example             # Template — copy to .env and fill in your key
+├── Dockerfile                # Multi-stage Docker image (slim runtime)
+├── docker-compose.yml        # Single-service Docker setup
+├── .env.example               # Template — copy to .env and fill in your key
 ├── .gitignore
 └── static/
-    ├── index.html           # Single-page frontend (Vanilla JS)
-    └── audio/               # gTTS-generated .mp3 files (auto-created at runtime)
+    ├── index.html            # Single-page frontend (Vanilla JS)
+    └── audio/                # gTTS-generated .mp3 files (auto-created at runtime)
 ```
 
 ---
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- Python 3.11+ (for Method 1)
+- Docker Desktop (for Method 2)
+- An [OpenAI API key](https://platform.openai.com/api-keys)
+
 ### Method 1: Plain Python (Fastest)
 
-**Step 1 — Create your `.env`**
-```powershell
-# Windows PowerShell
-Copy-Item .env.example .env
+**1. Clone the repo**
+```bash
+git clone https://github.com/jeevanm27/Multilingual-Interview-AI.git
+cd Multilingual-Interview-AI
+```
+
+**2. Create your `.env`**
+```bash
+cp .env.example .env        # macOS/Linux
+# or
+Copy-Item .env.example .env # Windows PowerShell
 ```
 Open `.env` and set your real `OPENAI_API_KEY`.
 
-**Step 2 — Install dependencies**
+**3. Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-**Step 3 — Run**
+**4. Run the server**
 ```bash
 python main.py
 ```
 
-**Step 4 — Open the app**
+**5. Open the app**
 Visit → **http://localhost:8000**
 
 ---
@@ -53,18 +97,18 @@ Visit → **http://localhost:8000**
 
 > Requires Docker Desktop to be running.
 
-**Step 1 — Create your `.env`**
-```powershell
-Copy-Item .env.example .env
+**1. Create your `.env`**
+```bash
+cp .env.example .env
 ```
 Set `OPENAI_API_KEY` inside `.env`.
 
-**Step 2 — Build and start**
+**2. Build and start**
 ```bash
 docker-compose up --build
 ```
 
-**Step 3 — Open the app**
+**3. Open the app**
 Visit → **http://localhost:8000**
 
 **Stop the app:**
@@ -79,7 +123,7 @@ docker-compose down
 ### `POST /start-interview`
 Starts a new session and returns the first question.
 
-**Request:**
+**Request**
 ```json
 {
   "job_role": "Backend Engineer",
@@ -87,7 +131,7 @@ Starts a new session and returns the first question.
 }
 ```
 
-**Response:**
+**Response**
 ```json
 {
   "session_id": "uuid-here",
@@ -101,9 +145,9 @@ Starts a new session and returns the first question.
 ---
 
 ### `POST /submit-answer`
-Submits an answer and returns the next question (or final feedback after 6 questions).
+Submits an answer and returns the next question (or final feedback after `MAX_QUESTIONS`).
 
-**Request:**
+**Request**
 ```json
 {
   "session_id": "uuid-here",
@@ -112,7 +156,7 @@ Submits an answer and returns the next question (or final feedback after 6 quest
 }
 ```
 
-**Response:**
+**Response**
 ```json
 {
   "session_id": "uuid-here",
@@ -148,11 +192,30 @@ Returns server health and active session count.
 ## 🧠 How It Works
 
 1. **Start Interview** — Client sends job role + language → server creates an in-memory session (UUID key) and asks GPT for the first question.
-2. **Voice Playback** — The question text is passed to gTTS which generates an `.mp3`; the frontend auto-plays it.
+2. **Voice Playback** — The question text is passed to gTTS, which generates an `.mp3`; the frontend auto-plays it.
 3. **Submit Answer** — Client sends the answer back → server appends it to the conversation history → GPT generates the next question in the same language.
 4. **Session End** — After `MAX_QUESTIONS` answers, GPT returns a performance summary (2 strengths + 1 improvement area) and the session is cleared from memory.
 
 Sessions are stored in a plain Python dictionary in memory — no database or cache server required.
+
+```
+┌────────────┐     job_role, language      ┌────────────┐
+│  Frontend  │ ───────────────────────────▶│  FastAPI    │
+│ (index.html│                              │  main.py   │
+└────────────┘◀─────────────────────────── └────┬───────┘
+   plays .mp3      question_text, audio_url      │
+                                                   ▼
+                                          ┌─────────────────┐
+                                          │  OpenAI GPT-4o- │
+                                          │  mini (question │
+                                          │  generation)     │
+                                          └────────┬────────┘
+                                                    ▼
+                                          ┌─────────────────┐
+                                          │      gTTS        │
+                                          │ (text → speech)  │
+                                          └─────────────────┘
+```
 
 ---
 
@@ -166,6 +229,16 @@ Sessions are stored in a plain Python dictionary in memory — no database or ca
 | French | `fr` |
 | Tamil | `ta` |
 | Telugu | `te` |
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Speech-to-text for spoken answers (Whisper API)
+- [ ] Persistent session storage (Redis/Postgres)
+- [ ] Downloadable PDF interview report
+- [ ] More languages (Hindi, Japanese, Portuguese)
+- [ ] Deployed live demo
 
 ---
 
@@ -184,7 +257,40 @@ Sessions are stored in a plain Python dictionary in memory — no database or ca
 
 **Port 8000 already in use**
 ```bash
-# Find and kill the process using port 8000
+# Windows
 netstat -ano | findstr :8000
 taskkill /PID <PID> /F
+
+# macOS/Linux
+lsof -i :8000
+kill -9 <PID>
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To get started:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add your feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+Please open an issue first for major changes to discuss what you'd like to change.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 👤 Author
+
+**Jeevan M**
+- GitHub: [@jeevanm27](https://github.com/jeevanm27)
+
+If you found this project useful, consider giving it a ⭐ on GitHub!
